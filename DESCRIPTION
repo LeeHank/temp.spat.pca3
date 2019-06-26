@@ -12,7 +12,10 @@ Imports:
     fields,
     dplyr,
     tidyr,
-    mvtnorm
+    mvtnorm,
+    foreach,
+    doParallel,
+    RSpectra
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.1
 URL: https://github.com/LeeHank/temp.spat.pca3

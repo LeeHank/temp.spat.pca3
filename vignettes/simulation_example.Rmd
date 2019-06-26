@@ -65,10 +65,10 @@ Also a quote using `>`:
 ([via](https://twitter.com/hadleywickham/status/504368538874703872))
 
 
-# Generate simulation data  
+# Generate simulation data (e.g. snr = 0.25)
 
 ## overall setting
-```{r}
+```{r, fig.show='hold'}
 # time length
 n_train=100
 n_test=50
@@ -91,14 +91,23 @@ A = matrix(c(0, 0,
              0, 0.8), nrow=2, byrow=T)
 lambda_mat=matrix(c(9,0,
                     0,9),nrow=2, byrow=T)
+
+# plot phi
+for(i in 1:2){
+        plot(s, phi_mat[,i], type="l", 
+             xlab="s",ylab="loading", col="red", lwd=2)
+}
 ```
 
-## snr = 0.25  
+## signal to noise ratio (snr) = 0.25  
 ```{r}
 snr = 0.25
 sigma_sq = sum(diag(lambda_mat))/(snr*p)
 V = V_mat_calc(A, lambda_mat)
+```
 
+## generate simulation data
+```{r}
 itr = 1
 set.seed(itr)
 gen_result1 <- data_gen_1d_2(s_old_mat=s, s_new_mat=s_new, k=2, n=n,
@@ -110,4 +119,112 @@ y_mat_new <- gen_result1$y_mat[(n_train+1):n,]
                 
 xsi_mat = gen_result1$xsi_mat[1:n_train,]
 new_xsi_mat = gen_result1$xsi_mat[(n_train+1):n,]
+
+signal_mat = xsi_mat %*% t(phi_mat)
+signal_mat_new = xsi_mat %*% t(phi_mat_new)
 ```
+
+## take a look  
+### dim check  
+```{r}
+dim(y_mat) # 100(time) by 50(location) matrix
+dim(xsi_mat) # 100(time) by 2(states) matrix
+dim(signal_mat) # 100(time) by 50(location) matrix
+```
+
+### observation vs signal  
+```{r, fig.width=6, fig.height=4}
+par(mfrow=c(2,3))
+for(t in c(1,25,50,75,100)){
+        plot(s, y_mat[t,],type="l",lwd=2,main=paste0("t = ", t),ylab="Y_t(s)")
+        lines(s, signal_mat[t,],lwd=2,col="red")
+}
+```
+
+### time-series of each state  
+```{r, fig.show='hold'}
+ts.plot(xsi_mat[,1],ylab="",main="xi_1")
+ts.plot(xsi_mat[,2],ylab="",main="xi_2")
+```
+
+# Tuning hyper-parameters  
+
+## Hyper-parameter set  
+```{r}
+tau_cv = 2^seq(-10,10,by=1)
+k_select=c(1,2,3,4)
+```
+
+
+```{r eval=FALSE}
+# parallel computing setting  
+library(foreach)
+library(doParallel)
+cl = makeCluster(6)
+registerDoParallel(cl)
+
+# tuning
+cv_result_all = temp_spat_cv_final2(s=s, y_mat=y_mat,sigma2_eps = 1,
+                                    itermax = 30, tol=0.1, tau=tau_cv, k=k_select)
+cv_result_all$best_list$k # = 2
+cv_result_all$best_list$stau # = 8
+```
+
+Since the tuning process is too time-consuming, we load the tuning results.  
+```{r}
+#cv_result_all$k_best
+```
+
+# Fitting model  
+## Parameter estimation  
+```{r}
+EM_result <- EM_func3(s=s, y_mat=y_mat, 
+                      y_mat_new=y_mat_new, 
+                      sigma2_eps=1, 
+                      itermax = 30, 
+                      tol = 0.001, 
+                      tau=8, 
+                      k=2)
+```
+
+### Check estimation of Phi  
+```{r, fig.show='hold'}
+plot(s, phi_mat[,1],type="l",col="gray",lwd=2,
+     ylab="loading",ylim=c(-0.4,0.4))
+lines(s, EM_result$Phi[,1],col="red",lwd=2)
+
+plot(s, phi_mat[,2],type="l",col="gray",lwd=2,
+     ylab="loading",ylim=c(-0.4,0.4))
+lines(s, EM_result$Phi[,2],col="red",lwd=2)
+```
+
+### Check estimation of measurement error  
+```{r}
+cat(paste0("True variance of measurement error is ",sigma_sq,"\n",
+           "Estimated variance of measurement error is ",EM_result$sigma2_eps))
+```
+
+### Check estimation of A  
+```{r}
+A #true A  
+EM_result$A #estimated A
+```
+
+### Check Ca  
+```{r}
+V # true covariance matrix of a_t
+EM_result$Ca # Estimated covariance matrix of a_t
+```
+
+## xi prediction (Kalman filter)
+```{r}
+
+```
+
+
+## all in one function  
+
+
+# Compare to other models  
+## Fitting model 1  
+## Fitting model 2  
