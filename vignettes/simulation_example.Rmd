@@ -63,3 +63,51 @@ Also a quote using `>`:
 
 > "He who gives up [code] safety for [code] speed deserves neither."
 ([via](https://twitter.com/hadleywickham/status/504368538874703872))
+
+
+# Generate simulation data  
+
+## overall setting
+```{r}
+# time length
+n_train=100
+n_test=50
+n=n_train+n_test
+
+# number of location
+p=50
+s <- matrix(seq(-5, 5, length = p),nrow=p,ncol=1)
+s_new <- matrix(seq(-5, 5, length=3*p), nrow=3*p, ncol=1)
+
+# dim of eigen-space
+k=2
+
+# phi, A, and Lambda matrix
+phi_1 <- exp(-s^2)/norm(as.matrix(exp(-s^2)),type="F")
+phi_2 <- s*exp(-s^2)/norm(as.matrix(s*exp(-s^2)), "F")
+phi_mat <- cbind(phi_1, phi_2)
+phi_mat_new <- new_loc_phi(s_new, s, B=B_gen(s, phi_mat))
+A = matrix(c(0, 0,
+             0, 0.8), nrow=2, byrow=T)
+lambda_mat=matrix(c(9,0,
+                    0,9),nrow=2, byrow=T)
+```
+
+## snr = 0.25  
+```{r}
+snr = 0.25
+sigma_sq = sum(diag(lambda_mat))/(snr*p)
+V = V_mat_calc(A, lambda_mat)
+
+itr = 1
+set.seed(itr)
+gen_result1 <- data_gen_1d_2(s_old_mat=s, s_new_mat=s_new, k=2, n=n,
+                             lambda_mat=lambda_mat,
+                             sigma_sq=sigma_sq,A=A, V=V)
+
+y_mat <- gen_result1$y_mat[1:n_train,]
+y_mat_new <- gen_result1$y_mat[(n_train+1):n,]
+                
+xsi_mat = gen_result1$xsi_mat[1:n_train,]
+new_xsi_mat = gen_result1$xsi_mat[(n_train+1):n,]
+```
