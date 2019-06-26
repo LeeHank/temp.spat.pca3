@@ -1,0 +1,3 @@
+useDynLib(temp.spat.pca3, .registration=TRUE)
+importFrom(Rcpp, evalCpp)
+exportPattern("^[[:alpha:]]+")
