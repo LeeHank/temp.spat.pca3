@@ -2,7 +2,10 @@
 title: "Simulation Example"
 author: "Han-Yueh Lee"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Simulation Example}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,56 +19,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
-
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
-```
-
-You can enable figure captions by `fig_caption: yes` in YAML:
-
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
-```
-
-Also a quote using `>`:
-
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
-
-
-# Generate simulation data (e.g. snr = 0.25)
+# Generate simulation data (snr = 0.25)
 
 ## overall setting
 ```{r, fig.show='hold'}
@@ -78,6 +32,10 @@ n=n_train+n_test
 p=50
 s <- matrix(seq(-5, 5, length = p),nrow=p,ncol=1)
 s_new <- matrix(seq(-5, 5, length=3*p), nrow=3*p, ncol=1)
+# s = matrix(seq(-5,5,by=0.2))
+# s_new = matrix(seq(-5,5,by=0.1))
+# p = nrow(s)
+
 
 # dim of eigen-space
 k=2
@@ -121,7 +79,7 @@ xsi_mat = gen_result1$xsi_mat[1:n_train,]
 new_xsi_mat = gen_result1$xsi_mat[(n_train+1):n,]
 
 signal_mat = xsi_mat %*% t(phi_mat)
-signal_mat_new = xsi_mat %*% t(phi_mat_new)
+signal_mat_new = new_xsi_mat %*% t(phi_mat_new)
 ```
 
 ## take a look  
@@ -216,15 +174,187 @@ V # true covariance matrix of a_t
 EM_result$Ca # Estimated covariance matrix of a_t
 ```
 
-## xi prediction (Kalman filter)
+## kalman filter, spatial prediction, & temporal forecast  
 ```{r}
+new_phi <- new_loc_phi(s_new=s_new, 
+                               s_old = s, 
+                               B = B_gen(s, EM_result$Phi))
+pred_result = pred_func(new_phi=new_phi, 
+                        y_mat_new=y_mat_new, 
+                        EM_result=EM_result)
+```
 
+### check new_phi  
+```{r, fig.show='hold'}
+plot(s_new, pred_result$new_phi[,1],type="l",
+     col="red",lwd=2,ylab="loading",ylim=c(-0.4,0.4))
+plot(s_new, pred_result$new_phi[,2],type="l",col="red",
+     lwd=2,ylab="loading",ylim=c(-0.4,0.4))
 ```
 
 
+### check xi result (filter & prediction)  
+```{r, fig.width=5,fig.height=5}
+par(mfrow=c(2,2))
+plot(1:n_test,pred_result$xi_result$xi_pred[1,],type="l",
+     xlab="time",ylab="xi_1")
+plot(1:n_test,pred_result$xi_result$xi_pred[2,],type="l",
+     xlab="time",ylab="xi_2")
+
+acf(pred_result$xi_result$xi_pred[1,],main="xi_1_series")
+acf(pred_result$xi_result$xi_pred[2,],main="xi_2_series")
+```
+
+
+## check spatial prediction (point)  
+
+### given arbitrary time t, predict spatial surface    
+```{r, fig.width=8,fig.height=6}
+par(mfrow=c(2,2))
+for(t in c(20, 30, 40, 50)){
+        signal = signal_mat_new[t,]
+        observation = signal + rnorm(n = length(signal), sd = sqrt(sigma_sq))
+        pred = pred_result$y_spat[t,]
+        pred_up = pred_result$y_spat_up[t,]
+        pred_lw = pred_result$y_spat_lw[t,]
+        plot(observation, type="l", col="gray",
+             xlab="location", ylab="response_measure",
+             main=paste0("time = ",t),ylim=c(-4,4))
+        lines(signal,col="blue")
+        lines(pred, col="red")
+        lines(pred_up, col="red",lty=2)
+        lines(pred_lw, col="red",lty=2)
+        legend("bottomright",
+               legend = c("observation","signal","predict","interval"),
+               col=c("gray","blue","red","red"),
+               lty=c(1,1,1,2),cex=0.5)
+} 
+```
+
+### empirical coverage rate of spatial prediction   
+```{r}
+set.seed(1)
+observation = signal_mat_new + rnorm(n=length(signal_mat_new),
+                                     mean=0,sd = sqrt(sigma_sq))
+mean(observation<=pred_result$y_spat_up & 
+             observation>=pred_result$y_spat_lw)
+```
+
+
+## temporal forecast  
+### given arbitrary time t, forecast spatial surface in time (t+1)   
+```{r, fig.width=8,fig.height=6}
+par(mfrow=c(2,2))
+for(t in c(20, 30, 40, 50)){
+        signal = signal_mat_new[t,]
+        observation = signal + rnorm(n = length(signal), sd = sqrt(sigma_sq))
+        forecast = pred_result$y_temp[t,]
+        forecast_up = pred_result$y_temp_up[t,]
+        forecast_lw = pred_result$y_temp_lw[t,]
+        plot(observation, type="l", col="gray",
+             xlab="location", ylab="response_measure",
+             main=paste0("time = ",t),ylim=c(-4,4))
+        lines(signal,col="blue")
+        lines(forecast, col="red")
+        lines(forecast_up, col="red",lty=2)
+        lines(forecast_lw, col="red",lty=2)
+        legend("bottomright",
+               legend = c("observation","signal","forecast","interval"),
+               col=c("gray","blue","red","red"),
+               lty=c(1,1,1,2),cex=0.5)
+} 
+```
+
+### empirical coverage rate of temporal forecast   
+```{r}
+set.seed(1)
+observation = signal_mat_new + rnorm(n=length(signal_mat_new),
+                                     mean=0,sd = sqrt(sigma_sq))
+mean(observation<=pred_result$y_temp_up & 
+             observation>=pred_result$y_temp_lw)
+```
+
+## performance measure  
+
+### true value preparation  
+```{r}
+y_new_true = signal_mat_new
+lag0_cov_true = phi_mat_new %*% lambda_mat %*% t(phi_mat_new)
+lag1_cov_true = phi_mat_new %*% A %*% lambda_mat %*% t(phi_mat_new)
+```
+
+### performance calculation  
+
+```{r}
+performance = performance_func(y_new_true = signal_mat_new,
+                               y_spat = pred_result$y_spat,
+                               y_temp = pred_result$y_temp,
+                               lag0_cov_true = lag0_cov_true,
+                               lag0_cov_est = pred_result$lag0_cov_est,
+                               lag1_cov_true = lag1_cov_true,
+                               lag1_cov_est = pred_result$lag1_cov_est)
+performance
+```
+
 ## all in one function  
+```{r}
+sim_result = temp_spat_sim_em3(s=s, y_mat=y_mat, 
+                      y_mat_new=y_mat_new, 
+                      sigma2_eps=1, 
+                      itermax = 30, 
+                      tol = 0.001, 
+                      tau=8, 
+                      k=2,
+                      s_new = s_new, 
+                      y_new_true = y_new_true)
+```
+
+results:  
+```{r}
+sim_result$performance
+```
 
 
 # Compare to other models  
 ## Fitting model 1  
+```{r}
+model1_result = model1_func(s, s_new, y_mat,y_mat_new,
+                            xsi_mat, phi_mat,
+                            new_xsi_mat, phi_mat_new, 
+                            lambda_mat, A)
+model1_result$performance
+```
+
 ## Fitting model 2  
+
+### generate basis function  
+```{r}
+scale_set = 1.5
+kkk = 10
+bas_mat = auto_gau_basis_1d(s_mat = s, 
+                            num_center = kkk,
+                            scale = scale_set)
+bas_mat_new = auto_gau_basis_1d(s_mat = s_new, 
+                                num_center = kkk,
+                                scale = scale_set)
+
+```
+
+
+### fitting  
+```{r}
+model2_result = temp_spat_sim_em_model2(s=s, s_new=s_new, 
+                                 y_mat=y_mat, y_mat_new=y_mat_new,
+                                 bas_mat=bas_mat, 
+                                 bas_mat_new = bas_mat_new,
+                                 new_xsi_mat=new_xsi_mat, 
+                                 phi_mat_new=phi_mat_new,
+                                 lambda_mat=lambda_mat, 
+                                 A=A, 
+                                 k=kkk, 
+                                 sigma2_eps=1, 
+                                 itermax = 30, 
+                                 tol = 0.001)
+model2_result$performance
+```
+

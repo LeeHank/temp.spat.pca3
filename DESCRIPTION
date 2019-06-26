@@ -15,7 +15,9 @@ Imports:
     mvtnorm,
     foreach,
     doParallel,
-    RSpectra
+    RSpectra,
+    purrr,
+    Matrix
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.1
 URL: https://github.com/LeeHank/temp.spat.pca3
