@@ -12,3 +12,7 @@ LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.1
 URL: https://github.com/LeeHank/temp.spat.pca3
 BugReports: https://github.com/LeeHank/temp.spat.pca3/issues
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
