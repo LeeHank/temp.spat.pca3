@@ -130,7 +130,9 @@ cv_result_all$best_list$stau # = 8
 
 Since the tuning process is too time-consuming, we load the tuning results.  
 ```{r}
-#cv_result_all$k_best
+data("cv_result_all")
+cv_result_all$best_list$k
+cv_result_all$best_list$stau
 ```
 
 # Fitting model  
