@@ -3,7 +3,7 @@ Type: Package
 Title: Regularized PCA on dynamic spatial pattern
 Version: 1.0
 Date: 2019-06-25
-Author: Han-Yueh Lee <ckshoupon@hotmail.com>
+Author: Han-Yueh Lee, Nan-Jung Hsu
 Maintainer: Han-Yueh Lee <ckshoupon@hotmail.com>
 Description: Functions to implement temporal spatial pca
 License: GPL-2

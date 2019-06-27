@@ -1,7 +1,7 @@
 
 
 
-#' Title
+#' Generate B matrix
 #'
 #' @param s location coordinate matrix (generally a N by 2 matrix)
 #' @param phi_mat basis function matrix
@@ -25,7 +25,13 @@ B_gen <- function(s, phi_mat){
 }
 
 
-#generate phi(S0), in thesis p18
+#' Generate new Phi matrix
+#'
+#' @param s_new locations for spatial prediction
+#' @param s_old locations for model fitting
+#' @param B B matrix in thesis p18
+#'
+#' @return generate phi(S0), in thesis p18
 new_loc_phi <- function(s_new, s_old, B){
         s_dim = ncol(s_new)
         if(s_dim==1){
@@ -42,19 +48,50 @@ new_loc_phi <- function(s_new, s_old, B){
         new_phi <- cbind(G_new, E_new) %*% B
 }
 
-# generate Ca, aka Sigma_a, in thesis p10 
+#' Calculate Ca matrix by lambda and A
+#'
+#' @param A state-transition matrix
+#' @param lambda_mat state covariance matrix
+#'
+#' @return generate Ca, also known as Sigma_a, in thesis p10 
 V_mat_calc <- function(A, lambda_mat){
         lambda_mat - A %*% lambda_mat %*% t(A)
 }
 
-# generate lambda matrix by A & Ca
+#' Calclulate lambda matrix by A & Ca
+#'
+#' @param A state-transition matrix
+#' @param Ca covariance matrix of random noise
+#'
+#' @return lambda matrix
 lambda_mat_calc <- function(A, Ca){
         k = nrow(A)
         vec = solve(diag(k^2)-kronecker(A, A)) %*% as.vector(Ca)
         matrix(vec, nrow=k)
 }
-
-# generate data in thesis p23~24
+#' Generate simulation data in thesis p23~24
+#'
+#' @param s_old_mat locations for model fitting
+#' @param s_new_mat locations for spatial prediction
+#' @param k dim of eigen-space
+#' @param n time length
+#' @param lambda_mat state coavariance matrix
+#' @param sigma_sq measurement error variance
+#' @param A transition matrix
+#' @param V Ca
+#' @param normalize logical value, if TRUE, data matrix will be standardized by column
+#'
+#' @return a list object contains data matrix, signal, and errors
+#' \describe{
+#'   \item{y_mat}{data matrix (time T by locations N matrix)}
+#'   \item{xsi_mat}{state matrix (time T by eigen-space K matrix)}
+#'   \item{epsilon_mat}{measurement error matrix (time T by locations N matrix)}
+#'   \item{location}{locations for fitting}
+#'   \item{phi_mat}{phi mat}
+#'   \item{location_new}{locations for spatial prediction}
+#'   \item{phi_mat_new}{phi mat new}
+#' }
+#' @export
 data_gen_1d_2 <- function(s_old_mat, s_new_mat, k, n,
                           lambda_mat, sigma_sq, A, V, 
                           normalize=FALSE){ 
@@ -122,7 +159,19 @@ data_gen_1d_2 <- function(s_old_mat, s_new_mat, k, n,
 
 # ---------------------------------------------
 
-# our method (parameter estimation via EM)
+
+#' Parameter estimation of Temporal Spatial PCA by EM-algorithm
+#' @param s location matrix
+#' @param y_mat data matrix(training data)
+#' @param y_mat_new data matrix(testing data)
+#' @param sigma2_eps measurement error variance
+#' @param itermax maximum iteration of EM-algorithm
+#' @param tol stopping criterion of EM 
+#' @param tau roughness parameter
+#' @param k dim of eigen-space
+#'
+#' @return a list of estimated parameters
+#' @export
 EM_func3 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30, 
                     tol = 0.001, tau, k){
         
@@ -170,6 +219,18 @@ EM_func3 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30,
                              tau=tau, omega=omega, tol_m=tol.m, tol1=tol1, tol2=tol2)
 }
 
+#' Tuning process of Temporal Spatial PCA
+#' 
+#' @param s location matrix
+#' @param y_mat data matrix
+#' @param sigma2_eps measurement error variance
+#' @param itermax maximum iteration of EM-algorithm
+#' @param tol stopping criterion of EM 
+#' @param tau a vector contains candidates of roughness parameter
+#' @param k a vector contains candidates of eigen-space
+#'
+#' @return a list of tuning process
+#' @export
 temp_spat_cv_final3 <- function(s, y_mat, sigma2_eps=1, itermax = 30, 
                                 tol = 0.001, tau, k){
         
@@ -281,6 +342,16 @@ temp_spat_cv_final3 <- function(s, y_mat, sigma2_eps=1, itermax = 30,
 }
 
 
+#' Prediction function of Temporal Spatial PCA
+#'
+#' @param new_phi phi matrix for spatial prediction use
+#' @param y_mat_new observation in finite locations in the future
+#' @param EM_result a list created from EM_func3
+#'
+#' @return The results of Kalman filter (xi filter & prediction), 
+#' spatial prediction & temporal forecast 
+#' (both point & interval prediction)
+#' @export
 pred_func = function(new_phi, y_mat_new, EM_result){
         
         n_train = ncol(EM_result$smooth_result$xi_smooth)
@@ -320,6 +391,18 @@ pred_func = function(new_phi, y_mat_new, EM_result){
 
 }
 
+#' Performance measure calculation from thesis p24
+#'
+#' @param y_new_true true signal matrix
+#' @param y_spat spatial prediction matrix
+#' @param y_temp temporal forecast matrix
+#' @param lag0_cov_true true lag0 covariance matrix
+#' @param lag0_cov_est estimated lag0 covariance matrix
+#' @param lag1_cov_true true lag1 covariance matrix
+#' @param lag1_cov_est estimated lag1 covariance matrix
+#'
+#' @return performance measures
+#' @export
 performance_func = function(y_new_true,y_spat, y_temp,
                             lag0_cov_true,lag0_cov_est,
                             lag1_cov_true,lag1_cov_est){
@@ -338,6 +421,22 @@ performance_func = function(y_new_true,y_spat, y_temp,
         
 }
 
+
+#' All in one function for simulation experiment use
+#'
+#' @param s location matrix
+#' @param y_mat data matrix (training data)
+#' @param y_mat_new data matrix (testing data)
+#' @param sigma2_eps measurement error variance
+#' @param itermax maximum iteration in EM-algorithm
+#' @param tol stopping criterion
+#' @param tau roughness parameter
+#' @param k eigen-space
+#' @param s_new location matrix for spatial prediction use
+#' @param y_new_true true signal matrix
+#'
+#' @return 
+#' @export
 temp_spat_sim_em3 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30, 
                              tol = 0.001, tau, k,
                              s_new, y_new_true){

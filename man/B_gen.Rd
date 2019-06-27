@@ -2,7 +2,7 @@
 % Please edit documentation in R/temp_spat_pca.R
 \name{B_gen}
 \alias{B_gen}
-\title{Title}
+\title{Generate B matrix}
 \usage{
 B_gen(s, phi_mat)
 }
@@ -15,5 +15,5 @@ B_gen(s, phi_mat)
 B matrix in thesis p18
 }
 \description{
-Title
+Generate B matrix
 }
