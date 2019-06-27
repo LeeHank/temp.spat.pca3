@@ -14,11 +14,10 @@ You can install the released version of temp.spat.pca3 from [CRAN](https://CRAN.
 install.packages("temp.spat.pca3")
 ```
 
-Example
--------
-
-This is a basic example which shows you how to solve a common problem:
+You can also install the development version of temp.spat.pca3 by:
 
 ``` r
-## basic example code
+#install.packages("devtools")
+library(devtools)
+install_github("LeeHank/temp.spat.pca3")
 ```
