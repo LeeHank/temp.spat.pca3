@@ -29,5 +29,12 @@ You can also install the development version of temp.spat.pca3 by:
 ```r
 #install.packages("devtools")
 library(devtools)
-install_github("LeeHank/temp.spat.pca3")
+install_github("LeeHank/temp.spat.pca3", build_vignettes = TRUE)
+```
+## Tutorials  
+
+After downloading the package, one can use following code to run tutorial:  
+```r
+vignette("simulation_example", package="temp.spat.pca3")
+vignette("real_data_example", package="temp.spat.pca3")
 ```
