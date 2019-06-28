@@ -1,6 +1,3 @@
-
-
-
 #' Generate B matrix
 #'
 #' @param s location coordinate matrix (generally a N by 2 matrix)
@@ -432,20 +429,31 @@ performance_func = function(y_new_true,y_spat, y_temp,
 #' @param tol stopping criterion
 #' @param tau roughness parameter
 #' @param k eigen-space
+#' @param phi_mat_new true new phi matrix
+#' @param lambda_mat true lambda matrix
+#' @param A state transition matrix
+#' @param new_xsi_mat true random coefficient matrix
 #' @param s_new location matrix for spatial prediction use
-#' @param y_new_true true signal matrix
 #'
-#' @return 
+#' @return a list of parameter estimaition, prediction, and performance measure
 #' @export
-temp_spat_sim_em3 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30, 
+temp_spat_sim_em3 = function(s, y_mat, y_mat_new, 
+                             sigma2_eps=1, itermax = 30, 
                              tol = 0.001, tau, k,
-                             s_new, y_new_true){
+                             s_new,
+                             phi_mat_new,lambda_mat,A,
+                             new_xsi_mat){
         EM_result = EM_func3(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30, 
                              tol = 0.001, tau, k)
         new_phi <- new_loc_phi(s_new=s_new, 
                                s_old = s, 
                                B = B_gen(s, EM_result$Phi))
         pred_result = pred_func(new_phi, y_mat_new, EM_result)
+        
+        y_new_true = new_xsi_mat %*% t(phi_mat_new)
+        lag0_cov_true = phi_mat_new %*% lambda_mat %*% t(phi_mat_new)
+        lag1_cov_true = phi_mat_new %*% A %*% lambda_mat %*% t(phi_mat_new)
+        
         performance = performance_func(y_new_true = signal_mat_new,
                                        y_spat = pred_result$y_spat,
                                        y_temp = pred_result$y_temp,
@@ -458,10 +466,51 @@ temp_spat_sim_em3 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30,
              performance=performance)
 }
 
-
+#' All in one function for data analysis
+#'
+#' @param s location matrix
+#' @param s_new location matrix for spatial prediction use
+#' @param y_mat data matrix (training)
+#' @param y_mat_new data matrix (testing)
+#' @param sigma2_eps measurement error variance
+#' @param itermax maximum iteration in EM-algorithm
+#' @param tol stopping criterion
+#' @param tau roughness parameter
+#' @param k dim of eigen-space
+#'
+#' @return a list of parameter estimation and prediction results
+#' @export
+temp_spat_data_em3 = function(s, s_new, y_mat, y_mat_new, sigma2_eps=1, itermax = 30, 
+                             tol = 0.001, tau, k){
+        EM_result = EM_func3(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30, 
+                             tol = 0.001, tau, k)
+        new_phi <- new_loc_phi(s_new=s_new, 
+                               s_old = s, 
+                               B = B_gen(s, EM_result$Phi))
+        pred_result = pred_func(new_phi, y_mat_new, EM_result)
+        
+        list(EM_result = EM_result,
+             new_phi=new_phi,
+             pred_result=pred_result)
+}
 
 # --------------------------------------------------------
-# model 1
+
+#' Model I for simulation use
+#'
+#' @param s location matrix for model fitting
+#' @param s_new location matrix for spatial prediction
+#' @param y_mat data matrix (training data)
+#' @param y_mat_new data matrix (testing data)
+#' @param xsi_mat state matrix (true value)
+#' @param phi_mat phi matrix (true value)
+#' @param new_xsi_mat new state matrix (true value)
+#' @param phi_mat_new new phi matrix (true value)
+#' @param lambda_mat state covariance matrix (true value)
+#' @param A state transition matrix (true value)
+#'
+#' @return a list of parameter estimation result and performance results
+#' @export
 model1_func = function(s, s_new, y_mat,y_mat_new,
                        xsi_mat, phi_mat, 
                        new_xsi_mat, phi_mat_new, lambda_mat, A){
@@ -635,8 +684,18 @@ model1_func = function(s, s_new, y_mat,y_mat_new,
              data_arma_theta_mean=data_arma_theta_mean)
 }
 
-# --------------------------------------------------------
-# model 2
+
+
+# ------------------------------------------------------------
+
+#' Gaussian kernel basis function generation (1-dim)
+#'
+#' @param s_mat location matrix
+#' @param num_center number of center
+#' @param scale sigma:delta = 1:scale, default is 1.5
+#'
+#' @return Gaussian kernel basis function
+#' @export
 auto_gau_basis_1d = function(s_mat, num_center,scale=1.5){
         
         s_max =max(s_mat)
@@ -663,6 +722,20 @@ auto_gau_basis_1d = function(s_mat, num_center,scale=1.5){
         out
 }
 
+
+#' Parameter estimation function for Model II
+#'
+#' @param s location matrix
+#' @param y_mat data matrix (training data)
+#' @param y_mat_new data matrix (testing data)
+#' @param sigma2_eps measurement error variance
+#' @param itermax maximum number of iteration in EM-algorithm
+#' @param tol stopping criterion of EM-algorithm
+#' @param k dim of eigen-space K
+#' @param phi_mat pre-specified basis function
+#'
+#' @return parameter estimates
+#' @export
 EM_func_model2 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30, 
                           tol = 0.001, k, phi_mat){
         
@@ -694,6 +767,26 @@ EM_func_model2 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30,
         
 }
 
+
+#' Model II for simulation use
+#'
+#' @param s location matrix for model fitting
+#' @param s_new location matrix for spatial prediction
+#' @param y_mat data matrix (training data)
+#' @param y_mat_new data matrix (testing data)
+#' @param bas_mat pre-specified basis functions evaluate at s
+#' @param bas_mat_new pre-specified basis functions evaluate at s_new
+#' @param new_xsi_mat true new xi matrix
+#' @param phi_mat_new true phi matrix
+#' @param lambda_mat state covariance matrix
+#' @param A state transition matrix
+#' @param k dim of eigen-space
+#' @param sigma2_eps measurement error variance
+#' @param itermax maximum iteration in EM-algorithm
+#' @param tol stopping criterion 
+#'
+#' @return a list of parameter estimation results and performance results
+#' @export
 temp_spat_sim_em_model2 <- function(s, s_new, y_mat, y_mat_new, 
                                     bas_mat, bas_mat_new,
                                     new_xsi_mat, phi_mat_new, lambda_mat, A,
@@ -707,7 +800,11 @@ temp_spat_sim_em_model2 <- function(s, s_new, y_mat, y_mat_new,
         
         pred_result = pred_func(new_phi=bas_mat_new, y_mat_new, EM_result)
         
-        performance = performance_func(y_new_true = signal_mat_new,
+        y_new_true = new_xsi_mat %*% t(phi_mat_new)
+        lag0_cov_true = phi_mat_new %*% lambda_mat %*% t(phi_mat_new)
+        lag1_cov_true = phi_mat_new %*% A %*% lambda_mat %*% t(phi_mat_new)
+        
+        performance = performance_func(y_new_true = y_new_true,
                                        y_spat = pred_result$y_spat,
                                        y_temp = pred_result$y_temp,
                                        lag0_cov_true = lag0_cov_true,
@@ -717,5 +814,37 @@ temp_spat_sim_em_model2 <- function(s, s_new, y_mat, y_mat_new,
         list(EM_result = EM_result,
              pred_result=pred_result,
              performance=performance)
+        
+}
+
+#' Model II for data analysis use
+#'
+#' @param s location matrix for model fitting
+#' @param s_new location matrix for spatial prediction
+#' @param y_mat data matrix (training data)
+#' @param y_mat_new data matrix (testing data)
+#' @param bas_mat pre-specified basis functions evaluate at s
+#' @param bas_mat_new pre-specified basis functions evaluate at s_new 
+#' @param k dim of eigen-space
+#' @param sigma2_eps measurement error variance
+#' @param itermax maximum iteration in EM-algorithm
+#' @param tol stopping criterion 
+#'
+#' @return a list of parameter estimation and prediction results
+#' @export
+temp_spat_data_em_model2 <- function(s, s_new, y_mat, y_mat_new, 
+                                    bas_mat, bas_mat_new,
+                                    k, sigma2_eps=1, itermax = 30, tol = 0.001){
+        
+        
+        EM_result = EM_func_model2(s, y_mat, y_mat_new, 
+                                   sigma2_eps=sigma2_eps, 
+                                   itermax = itermax, 
+                                   tol = tol, k=k, phi_mat=bas_mat)
+        
+        pred_result = pred_func(new_phi=bas_mat_new, y_mat_new, EM_result)
+        
+        list(EM_result = EM_result,
+             pred_result=pred_result)
         
 }

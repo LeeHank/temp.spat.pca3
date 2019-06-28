@@ -2,7 +2,10 @@
 title: "Real data example"
 author: "Han-Yueh Lee"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Real data example}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,50 +19,195 @@ knitr::opts_chunk$set(
 )
 ```
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+# Load data  
+```{r}
+data("NCEP_U")
+data("NCEPlatlon")
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+dim(NCEP_U)
+dim(NCEPlatlon)
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+# Preprocessing  
+## Centering  
+```{r}
+y_mat_all = NCEP_U
+s_new = NCEPlatlon
+s_new_id = data.frame(cbind(id=1:nrow(s_new), 
+                            lon=s_new[,1], 
+                            lat=s_new[,2]))
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+y_mat_all_c = y_mat_all - 
+        matrix(rep(colMeans(y_mat_all), nrow(y_mat_all)),
+               nrow=nrow(y_mat_all),ncol=ncol(y_mat_all),
+               byrow=T)
+y_mat_all_c = as.matrix(y_mat_all_c)
 ```
 
-Also a quote using `>`:
+## Training & testing set  
+```{r}
+s = expand.grid(unique(s_new[,1])[seq(1,17,by=2)],
+                unique(s_new[,2])[seq(1,17,by=2)])
+colnames(s)=c("lon","lat")
+s = data.frame(s)
+s_id = dplyr::left_join(s, s_new_id, by=c("lon", "lat"))
+train_index = s_id$id
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+# transform format
+s_new = as.matrix(s_new)
+s = as.matrix(s)
+y_mat = y_mat_all_c[1:360,train_index]
+y_mat_new = y_mat_all_c[361:480,train_index]
+```
+
+## Long format table  
+```{r}
+#location table
+location = data.frame(s_new)
+colnames(location)=c("lat","lon")
+location$set = rep("test", nrow(s_new))
+location$set[train_index] = "train"
+location$id = 1:nrow(location)
+y_test = y_mat_all_c[361:480,]
+test_idx = which(location$set=="test")
+
+#long-format space-time table
+library(magrittr)
+space_wide = data.frame(y_mat_all_c)
+space_wide$time = 1:nrow(space_wide)
+data_long = space_wide %>%
+        tidyr::gather(id, z, -time) %>%
+        dplyr::mutate(id= sub("V","",id)) %>%
+        dplyr::mutate(training_set=(time %in% c(1:360) & id %in% train_index)) %>%
+        dplyr::mutate(id = as.numeric(id)) %>%
+        dplyr::left_join(s_new_id, by="id")
+```
+
+# Tuning hyper-parameters  
+## Candidate sets
+```{r}
+tau_cv = 2^seq(1,20,by=1)
+k = 1:40
+```
+
+## Tuning process
+```{r, eval=FALSE}
+cv_data = temp_spat_cv_final3(s=s, y_mat=y_mat,
+                         sigma2_eps = 1,
+                         itermax = 30, 
+                         tol=0.001, 
+                         tau=tau_cv, k=k)
+cv_data$best_list$k # = 39
+cv_data$best_list$stau # = 32768
+```
+
+# Fitting model  
+```{r}
+temp_spat_result = temp_spat_data_em3(s = s, 
+                                         s_new = s_new,
+                                         y_mat = y_mat,
+                                         y_mat_new = y_mat_new,
+                                         k = 39,
+                                         tau = 32768,
+                                         sigma2_eps=1, 
+                                         itermax = 30, 
+                                         tol = 10^(-3))
+```
+
+# Spatial prediction and temporal forecast (point prediction)  
+
+1. Given arbitrary time t, output spatial prediction surface at time t  
+2. Given arbitrary time t-1, output temporal forecast surface at time t   
+
+## t = 361, 420, 480  
+```{r, fig.width=8,fig.height=6}
+t_set = c(361, 420, 480)
+library(lattice)
+library(gridExtra)
+plist=list()
+for(i in 1:3){
+        t = t_set[i]
+        y_comp = data.frame(observe = y_mat_all_c[t,],
+                            pred = temp_spat_result$pred_result$y_spat[t-360,],
+                            forecast = temp_spat_result$pred_result$y_temp[t-360,],
+                            lat=s_new[,1],
+                            lon=s_new[,2])
+        plist[[1+(i-1)]] = levelplot(observe~lon*lat, 
+                       data=y_comp,
+                       scales = list(draw = FALSE), xlab = NULL, ylab = NULL, 
+                       at=seq(min(y_comp[,1:3]), max(y_comp[,1:3]), length.out=100),
+                       col.regions = heat.colors(100)[length(heat.colors(100)):1], 
+                       main=paste0("t",t,"_true"))
+        plist[[4+(i-1)]] = levelplot(pred~lon*lat, 
+                       data=y_comp,
+                       scales = list(draw = FALSE), xlab = NULL, ylab = NULL, 
+                       at=seq(min(y_comp[,1:3]), max(y_comp[,1:3]), length.out=100),
+                       col.regions = heat.colors(100)[length(heat.colors(100)):1], 
+                       main=paste0("t",t,"_pred"))
+        plist[[7+(i-1)]] = levelplot(forecast~lon*lat, 
+                       data=y_comp,
+                       scales = list(draw = FALSE), xlab = NULL, ylab = NULL, 
+                       at=seq(min(y_comp[,1:3]), max(y_comp[,1:3]), length.out=100),
+                       col.regions = heat.colors(100)[length(heat.colors(100)):1], 
+                       main=paste0("t",t,"_forecast"))
+}
+grid.arrange(grobs=plist, ncol=3)
+```
+
+## Empirical coverage rate of spatial prediction  
+```{r}
+y_observe = y_mat_all_c[361:480,]
+mean(y_observe <= temp_spat_result$pred_result$y_spat_up &
+             y_observe >= temp_spat_result$pred_result$y_spat_lw)
+```
+
+## Empirical coverage rate of spatial prediction  
+```{r}
+mean(y_observe <= temp_spat_result$pred_result$y_temp_up &
+             y_observe >= temp_spat_result$pred_result$y_temp_lw)
+```
+
+
+# Performance  
+## $MSE_{spat}$  
+```{r}
+sum((temp_spat_result$pred_result$y_spat[,test_idx]-y_mat_all_c[361:480,test_idx])^2)/(120*289)
+```
+
+## $MSE_{temp}$  
+```{r}
+sum((temp_spat_result$pred_result$y_temp[,test_idx]-y_mat_all_c[361:480,test_idx])^2)/(120*289)
+```
+
+# Compare to Model II  
+## Generate $\Phi$ matrix  
+```{r}
+library(FRK)
+library(sp)
+G1 = auto_basis(data=s_new %>% SpatialPoints(),
+               nres=1,type="Gaussian")
+show_basis(G1)
+phi_res1 = as.matrix(eval_basis(G1, as.matrix(s)))
+phi_res1_new = as.matrix(eval_basis(G1, as.matrix(s_new)))
+```
+
+## Fitting Model II
+```{r}
+model2 = temp_spat_data_em_model2(s=s, s_new=s_new, 
+                                 y_mat=y_mat, y_mat_new=y_mat_new,
+                                 bas_mat=phi_res1, bas_mat_new =phi_res1_new ,
+                                 k=ncol(phi_res1), 
+                                 sigma2_eps=1, itermax = 30, tol = 0.001)
+```
+
+## Performance  
+## $MSE_{spat}$  
+```{r}
+sum((model2$pred_result$y_spat[,test_idx]-y_mat_all_c[361:480,test_idx])^2)/(120*289)
+```
+
+## $MSE_{temp}$  
+```{r}
+sum((model2$pred_result$y_temp[,test_idx]-y_mat_all_c[361:480,test_idx])^2)/(120*289)
+```
+

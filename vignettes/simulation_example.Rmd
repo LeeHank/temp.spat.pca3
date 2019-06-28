@@ -122,13 +122,17 @@ cl = makeCluster(6)
 registerDoParallel(cl)
 
 # tuning
-cv_result_all = temp_spat_cv_final2(s=s, y_mat=y_mat,sigma2_eps = 1,
-                                    itermax = 30, tol=0.1, tau=tau_cv, k=k_select)
+cv_result_all = temp_spat_cv_final3(s=s, 
+                                    y_mat=y_mat,
+                                    sigma2_eps = 1,
+                                    itermax = 30, 
+                                    tol=0.001, 
+                                    tau=tau_cv, k=k_select)
 cv_result_all$best_list$k # = 2
 cv_result_all$best_list$stau # = 8
 ```
 
-Since the tuning process is too time-consuming, we load the tuning results.  
+Since the tuning process is time-consuming, we load the tuning results.  
 ```{r}
 data("cv_result_all")
 cv_result_all$best_list$k
@@ -308,7 +312,9 @@ sim_result = temp_spat_sim_em3(s=s, y_mat=y_mat,
                       tau=8, 
                       k=2,
                       s_new = s_new, 
-                      y_new_true = y_new_true)
+                      phi_mat_new=phi_mat_new,
+                      lambda_mat=lambda_mat,
+                      A=A, new_xsi_mat=new_xsi_mat)
 ```
 
 results:  
