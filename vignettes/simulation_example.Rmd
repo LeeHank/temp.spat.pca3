@@ -23,6 +23,7 @@ knitr::opts_chunk$set(
 
 ## overall setting
 ```{r, fig.show='hold'}
+library(temp.spat.pca3)
 # time length
 n_train=100
 n_test=50

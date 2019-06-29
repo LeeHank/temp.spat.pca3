@@ -21,8 +21,9 @@ knitr::opts_chunk$set(
 
 # Load data  
 ```{r}
-#data("NCEP_U")
-#data("NCEPlatlon")
+library(temp.spat.pca3)
+#data("NCEP_U",package="temp.spat.pca3")
+#data("NCEPlatlon",package="temp.spat.pca3")
 
 dim(NCEP_U)
 dim(NCEPlatlon)
