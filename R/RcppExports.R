@@ -21,19 +21,3 @@ EM_nonfixedPhi_rcpp2 <- function(y_mat, y_mat_new, Phi, mu0, Cov0, A, Ca, sigma2
     .Call('_temp_spat_pca3_EM_nonfixedPhi_rcpp2', PACKAGE = 'temp.spat.pca3', y_mat, y_mat_new, Phi, mu0, Cov0, A, Ca, sigma2_eps, itermax, tol, tau, omega, tol_m, tol1, tol2)
 }
 
-rcpparma_hello_world <- function() {
-    .Call('_temp_spat_pca3_rcpparma_hello_world', PACKAGE = 'temp.spat.pca3')
-}
-
-rcpparma_outerproduct <- function(x) {
-    .Call('_temp_spat_pca3_rcpparma_outerproduct', PACKAGE = 'temp.spat.pca3', x)
-}
-
-rcpparma_innerproduct <- function(x) {
-    .Call('_temp_spat_pca3_rcpparma_innerproduct', PACKAGE = 'temp.spat.pca3', x)
-}
-
-rcpparma_bothproducts <- function(x) {
-    .Call('_temp_spat_pca3_rcpparma_bothproducts', PACKAGE = 'temp.spat.pca3', x)
-}
-
