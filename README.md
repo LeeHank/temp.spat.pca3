@@ -28,6 +28,9 @@ Tutorials
 After downloading the package, one can use following code to run tutorial:
 
 ``` r
+browseVignettes("temp.spat.pca3")
 vignette("simulation_example", package="temp.spat.pca3")
 vignette("real_data_example", package="temp.spat.pca3")
 ```
+
+You can also visit the tutorial website: <https://leehank.github.io/temp.spat.pca3/>
