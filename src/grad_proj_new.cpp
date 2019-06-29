@@ -2,13 +2,13 @@
 #include <Rcpp.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
-// [[Rcpp::export]]
+
 double f_new(arma::mat phi, arma::mat Ceps_inv, arma::mat yxi,arma::mat S11, double tau, arma::mat omega) {
         double result = -2*trace(Ceps_inv*yxi*trans(phi))+trace(Ceps_inv*phi*S11*trans(phi))+tau*trace(trans(phi)*omega*phi);
         return result;
 }
 
-// [[Rcpp::export]]
+
 double f_new2(arma::mat y_mat, arma::mat phi, arma::mat Ceps_inv, arma::mat yxi,arma::mat S11, double tau, arma::mat omega) {
         int T=y_mat.n_rows;
         int N=y_mat.n_cols;
@@ -17,7 +17,7 @@ double f_new2(arma::mat y_mat, arma::mat phi, arma::mat Ceps_inv, arma::mat yxi,
         return result;
 }
 
-// [[Rcpp::export]]
+
 arma::mat f_grad(arma::mat phi,
                  arma::mat Ceps_inv,
                  arma::mat yxi,
@@ -27,7 +27,7 @@ arma::mat f_grad(arma::mat phi,
         return -2*Ceps_inv*yxi+Ceps_inv*phi*(S11+trans(S11))+2*tau*omega*phi;
 }
 
-// [[Rcpp::export]]
+
 arma::mat f_grad2(arma::mat y_mat,
                   arma::mat phi,
                   arma::mat Ceps_inv,
@@ -41,7 +41,7 @@ arma::mat f_grad2(arma::mat y_mat,
         return (T*N/tr)*(-2*yxi+2*phi*S11)+2*tau*omega*phi;
 }
 
-// [[Rcpp::export]]
+
 arma::mat line_search(arma::mat init, arma::mat z2, double learning_rate){
         arma::mat z3 = init + learning_rate * z2;
         arma::mat U;
@@ -53,7 +53,7 @@ arma::mat line_search(arma::mat init, arma::mat z2, double learning_rate){
 }
 
 
-// [[Rcpp::export]]
+
 arma::mat find_phi(arma::mat init, arma::mat Ceps_inv, arma::mat yxi, arma::mat S11, double tau, arma::mat omega,
                    double tol, double tol1, double tol2, bool verbose){
         
@@ -91,7 +91,7 @@ arma::mat find_phi(arma::mat init, arma::mat Ceps_inv, arma::mat yxi, arma::mat 
         return phi_est;
 }
 
-// [[Rcpp::export]]
+
 arma::mat find_phi2(arma::mat y_mat, arma::mat init, arma::mat Ceps_inv, arma::mat yxi, arma::mat S11, double tau, arma::mat omega,
                     double tol, double tol1, double tol2, bool verbose){
         
@@ -139,7 +139,7 @@ arma::mat find_phi2(arma::mat y_mat, arma::mat init, arma::mat Ceps_inv, arma::m
 using namespace arma;
 using namespace Rcpp;
 using namespace std;
-// [[Rcpp::export]]
+
 Rcpp::List Kfilter_rcpp(arma::mat y_mat, arma::mat Phi, 
                         arma::vec mu0,arma::mat Cov0, 
                         arma::mat A, arma::mat Ca, double sigma2_eps){
@@ -208,7 +208,7 @@ Rcpp::List Kfilter_rcpp(arma::mat y_mat, arma::mat Phi,
 
 using namespace arma;
 using namespace Rcpp;
-// [[Rcpp::export]]
+
 Rcpp::List Ksmooth_rcpp(arma::mat y_mat, arma::mat Phi, 
                         arma::vec mu0,arma::mat Cov0, 
                         arma::mat A, arma::mat Ca, double sigma2_eps){
@@ -267,7 +267,7 @@ Rcpp::List Ksmooth_rcpp(arma::mat y_mat, arma::mat Phi,
 
 using namespace arma;
 using namespace Rcpp;
-// [[Rcpp::export]]
+
 Rcpp::List EM_fixedPhi_rcpp(arma::mat y_mat, arma::mat y_mat_new, arma::mat Phi, 
                             arma::vec mu0,arma::mat Cov0, 
                             arma::mat A, arma::mat Ca, double sigma2_eps,
@@ -402,7 +402,7 @@ Rcpp::List EM_fixedPhi_rcpp(arma::mat y_mat, arma::mat y_mat_new, arma::mat Phi,
 using namespace arma;
 using namespace Rcpp;
 
-// [[Rcpp::export]]
+
 Rcpp::List EM_nonfixedPhi_rcpp(arma::mat y_mat, arma::mat y_mat_new, arma::mat Phi, 
                                arma::vec mu0,arma::mat Cov0, 
                                arma::mat A, arma::mat Ca, double sigma2_eps,
@@ -538,7 +538,7 @@ Rcpp::List EM_nonfixedPhi_rcpp(arma::mat y_mat, arma::mat y_mat_new, arma::mat P
 
 using namespace arma;
 using namespace Rcpp;
-// [[Rcpp::export]]
+
 Rcpp::List EM_nonfixedPhi_rcpp2(arma::mat y_mat, arma::mat y_mat_new, arma::mat Phi, 
                                 arma::vec mu0,arma::mat Cov0, 
                                 arma::mat A, arma::mat Ca, double sigma2_eps,
