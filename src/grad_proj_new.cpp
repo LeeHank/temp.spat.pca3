@@ -139,7 +139,7 @@ arma::mat find_phi2(arma::mat y_mat, arma::mat init, arma::mat Ceps_inv, arma::m
 using namespace arma;
 using namespace Rcpp;
 using namespace std;
-
+// [[Rcpp::export]]
 Rcpp::List Kfilter_rcpp(arma::mat y_mat, arma::mat Phi, 
                         arma::vec mu0,arma::mat Cov0, 
                         arma::mat A, arma::mat Ca, double sigma2_eps){
@@ -208,7 +208,7 @@ Rcpp::List Kfilter_rcpp(arma::mat y_mat, arma::mat Phi,
 
 using namespace arma;
 using namespace Rcpp;
-
+// [[Rcpp::export]]
 Rcpp::List Ksmooth_rcpp(arma::mat y_mat, arma::mat Phi, 
                         arma::vec mu0,arma::mat Cov0, 
                         arma::mat A, arma::mat Ca, double sigma2_eps){
@@ -267,7 +267,7 @@ Rcpp::List Ksmooth_rcpp(arma::mat y_mat, arma::mat Phi,
 
 using namespace arma;
 using namespace Rcpp;
-
+// [[Rcpp::export]]
 Rcpp::List EM_fixedPhi_rcpp(arma::mat y_mat, arma::mat y_mat_new, arma::mat Phi, 
                             arma::vec mu0,arma::mat Cov0, 
                             arma::mat A, arma::mat Ca, double sigma2_eps,
@@ -402,7 +402,7 @@ Rcpp::List EM_fixedPhi_rcpp(arma::mat y_mat, arma::mat y_mat_new, arma::mat Phi,
 using namespace arma;
 using namespace Rcpp;
 
-
+// [[Rcpp::export]]
 Rcpp::List EM_nonfixedPhi_rcpp(arma::mat y_mat, arma::mat y_mat_new, arma::mat Phi, 
                                arma::vec mu0,arma::mat Cov0, 
                                arma::mat A, arma::mat Ca, double sigma2_eps,
@@ -538,7 +538,7 @@ Rcpp::List EM_nonfixedPhi_rcpp(arma::mat y_mat, arma::mat y_mat_new, arma::mat P
 
 using namespace arma;
 using namespace Rcpp;
-
+// [[Rcpp::export]]
 Rcpp::List EM_nonfixedPhi_rcpp2(arma::mat y_mat, arma::mat y_mat_new, arma::mat Phi, 
                                 arma::vec mu0,arma::mat Cov0, 
                                 arma::mat A, arma::mat Ca, double sigma2_eps,
