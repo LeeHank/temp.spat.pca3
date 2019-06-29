@@ -7,6 +7,7 @@ Author: Han-Yueh Lee, Nan-Jung Hsu
 Maintainer: Han-Yueh Lee <ckshoupon@hotmail.com>
 Description: Functions to implement temporal spatial pca
 License: GPL-2
+LazyData: true
 Imports: 
     Rcpp (>= 0.12.18),
     fields,

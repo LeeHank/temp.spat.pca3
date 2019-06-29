@@ -21,8 +21,8 @@ knitr::opts_chunk$set(
 
 # Load data  
 ```{r}
-data("NCEP_U")
-data("NCEPlatlon")
+#data("NCEP_U")
+#data("NCEPlatlon")
 
 dim(NCEP_U)
 dim(NCEPlatlon)

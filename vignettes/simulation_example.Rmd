@@ -134,7 +134,7 @@ cv_result_all$best_list$stau # = 8
 
 Since the tuning process is time-consuming, we load the tuning results.  
 ```{r}
-data("cv_result_all")
+#data("cv_result_all")
 cv_result_all$best_list$k
 cv_result_all$best_list$stau
 ```
