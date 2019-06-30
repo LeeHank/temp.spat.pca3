@@ -166,6 +166,20 @@
     <p>a list of tuning process</p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>s</span> <span class='kw'>=</span> <span class='no'>sim_data</span>$<span class='no'>location</span>
+<span class='no'>y_mat</span> <span class='kw'>=</span> <span class='no'>sim_data</span>$<span class='no'>y_mat</span>[<span class='fl'>1</span>:<span class='fl'>100</span>,]
+<span class='no'>tau</span> <span class='kw'>=</span> <span class='fl'>2</span>^<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/seq'>seq</a></span>(-<span class='fl'>10</span>,<span class='fl'>10</span>,<span class='kw'>by</span><span class='kw'>=</span><span class='fl'>1</span>)
+<span class='no'>k</span><span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>3</span>,<span class='fl'>4</span>)
+
+<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>foreach</span>)
+<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>doParallel</span>)
+<span class='no'>cl</span> <span class='kw'>=</span> <span class='fu'>makeCluster</span>(<span class='fl'>6</span>)
+<span class='fu'><a href='https://www.rdocumentation.org/packages/doParallel/topics/registerDoParallel'>registerDoParallel</a></span>(<span class='no'>cl</span>)
+
+<span class='no'>cv_result_all</span> <span class='kw'>=</span> <span class='fu'>temp_spat_cv_final3</span>(<span class='kw'>s</span><span class='kw'>=</span><span class='no'>s</span>, <span class='kw'>y_mat</span><span class='kw'>=</span><span class='no'>y_mat</span>, <span class='kw'>tau</span><span class='kw'>=</span><span class='no'>tau</span>, <span class='kw'>k</span><span class='kw'>=</span><span class='no'>k</span>)
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -173,7 +187,9 @@
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

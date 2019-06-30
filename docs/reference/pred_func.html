@@ -151,6 +151,14 @@ spatial prediction &amp; temporal forecast
 (both point &amp; interval prediction)</p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>s</span> <span class='kw'>=</span> <span class='no'>sim_data</span>$<span class='no'>location</span>
+<span class='no'>s_new</span> <span class='kw'>=</span> <span class='no'>sim_data</span>$<span class='no'>location_new</span>
+<span class='no'>y_mat</span> <span class='kw'>=</span> <span class='no'>sim_data</span>$<span class='no'>y_mat</span>[<span class='fl'>1</span>:<span class='fl'>100</span>,]
+<span class='no'>y_mat_new</span> <span class='kw'>=</span> <span class='no'>sim_data</span>$<span class='no'>y_mat</span>[<span class='fl'>1</span>:<span class='fl'>100</span>,]
+<span class='no'>EM_result</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='EM_func3.html'>EM_func3</a></span>(<span class='kw'>s</span><span class='kw'>=</span><span class='no'>s</span>, <span class='kw'>y_mat</span><span class='kw'>=</span><span class='no'>y_mat</span>, <span class='kw'>y_mat_new</span><span class='kw'>=</span><span class='no'>y_mat_new</span>, <span class='kw'>tau</span><span class='kw'>=</span><span class='fl'>8</span>, <span class='kw'>k</span><span class='kw'>=</span><span class='fl'>2</span>)
+<span class='no'>new_phi</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='new_loc_phi.html'>new_loc_phi</a></span>(<span class='kw'>s_new</span><span class='kw'>=</span><span class='no'>s_new</span>, <span class='kw'>s_old</span> <span class='kw'>=</span> <span class='no'>s</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fu'><a href='B_gen.html'>B_gen</a></span>(<span class='no'>s</span>, <span class='no'>EM_result</span>$<span class='no'>Phi</span>))
+<span class='no'>pred_result</span> <span class='kw'>=</span> <span class='fu'>pred_func</span>(<span class='kw'>new_phi</span><span class='kw'>=</span><span class='no'>new_phi</span>, <span class='kw'>y_mat_new</span><span class='kw'>=</span><span class='no'>y_mat_new</span>, <span class='kw'>EM_result</span><span class='kw'>=</span><span class='no'>EM_result</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -158,7 +166,9 @@ spatial prediction &amp; temporal forecast
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

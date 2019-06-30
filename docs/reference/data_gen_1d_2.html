@@ -183,6 +183,23 @@
 
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>p</span> <span class='kw'>=</span> <span class='fl'>50</span>
+<span class='no'>s_old_mat</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/matrix'>matrix</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/seq'>seq</a></span>(-<span class='fl'>5</span>,<span class='fl'>5</span>,<span class='kw'>length</span><span class='kw'>=</span><span class='no'>p</span>))
+<span class='no'>s_new_mat</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/matrix'>matrix</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/seq'>seq</a></span>(-<span class='fl'>5</span>,<span class='fl'>5</span>,<span class='kw'>length</span><span class='kw'>=</span><span class='fl'>150</span>))
+<span class='no'>k</span><span class='kw'>=</span><span class='fl'>2</span>
+<span class='no'>n</span><span class='kw'>=</span><span class='fl'>150</span>
+<span class='no'>A</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/matrix'>matrix</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>0</span>, <span class='fl'>0</span>,
+             <span class='fl'>0</span>, <span class='fl'>0.8</span>), <span class='kw'>nrow</span><span class='kw'>=</span><span class='fl'>2</span>, <span class='kw'>byrow</span><span class='kw'>=</span><span class='fl'>TRUE</span>)
+<span class='no'>lambda_mat</span><span class='kw'>=</span><span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/matrix'>matrix</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>9</span>,<span class='fl'>0</span>,
+                    <span class='fl'>0</span>,<span class='fl'>9</span>),<span class='kw'>nrow</span><span class='kw'>=</span><span class='fl'>2</span>, <span class='kw'>byrow</span><span class='kw'>=</span><span class='fl'>TRUE</span>)
+<span class='no'>snr</span> <span class='kw'>=</span> <span class='fl'>0.25</span>
+<span class='no'>sigma_sq</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/sum'>sum</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/diag'>diag</a></span>(<span class='no'>lambda_mat</span>))/(<span class='no'>snr</span>*<span class='no'>p</span>)
+<span class='no'>V</span> <span class='kw'>=</span> <span class='fu'><a href='V_mat_calc.html'>V_mat_calc</a></span>(<span class='no'>A</span>, <span class='no'>lambda_mat</span>)
+<span class='no'>sim_data</span> <span class='kw'>=</span> <span class='fu'>data_gen_1d_2</span>(<span class='no'>s_old_mat</span>,<span class='no'>s_new_mat</span>,<span class='no'>k</span>,<span class='no'>n</span>,
+                         <span class='no'>lambda_mat</span>, <span class='no'>sigma_sq</span>, <span class='no'>A</span>, <span class='no'>C</span>)
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -190,7 +207,9 @@
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>
