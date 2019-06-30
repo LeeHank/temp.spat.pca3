@@ -41,3 +41,21 @@ a list object contains data matrix, signal, and errors
 \description{
 Generate simulation data in thesis p23~24
 }
+\examples{
+\dontrun{
+p = 50
+s_old_mat = matrix(seq(-5,5,length=p))
+s_new_mat = matrix(seq(-5,5,length=150))
+k=2
+n=150
+A = matrix(c(0, 0,
+             0, 0.8), nrow=2, byrow=TRUE)
+lambda_mat=matrix(c(9,0,
+                    0,9),nrow=2, byrow=TRUE)
+snr = 0.25
+sigma_sq = sum(diag(lambda_mat))/(snr*p)
+V = V_mat_calc(A, lambda_mat)
+sim_data = data_gen_1d_2(s_old_mat,s_new_mat,k,n,
+                         lambda_mat, sigma_sq, A, C)
+}
+}

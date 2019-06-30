@@ -30,3 +30,9 @@ a list of estimated parameters
 \description{
 Parameter estimation of Temporal Spatial PCA by EM-algorithm
 }
+\examples{
+s = sim_data$location
+y_mat = sim_data$y_mat[1:100,]
+y_mat_new = sim_data$y_mat[1:100,]
+EM_result <- EM_func3(s=s, y_mat=y_mat, y_mat_new=y_mat_new, tau=8, k=2)
+}

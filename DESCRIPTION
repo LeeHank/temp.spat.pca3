@@ -15,8 +15,6 @@ Imports:
     dplyr,
     tidyr,
     mvtnorm,
-    foreach,
-    doParallel,
     RSpectra,
     purrr,
     Matrix
@@ -26,5 +24,12 @@ URL: https://github.com/LeeHank/temp.spat.pca3
 BugReports: https://github.com/LeeHank/temp.spat.pca3/issues
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    foreach,
+    doParallel,
+    magrittr,
+    lattice,
+    gridExtra,
+    FRK,
+    sp
 VignetteBuilder: knitr

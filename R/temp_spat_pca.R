@@ -89,6 +89,24 @@ lambda_mat_calc <- function(A, Ca){
 #'   \item{phi_mat_new}{phi mat new}
 #' }
 #' @export
+#' 
+#' @examples 
+#' \dontrun{
+#' p = 50
+#' s_old_mat = matrix(seq(-5,5,length=p))
+#' s_new_mat = matrix(seq(-5,5,length=150))
+#' k=2
+#' n=150
+#' A = matrix(c(0, 0,
+#'              0, 0.8), nrow=2, byrow=TRUE)
+#' lambda_mat=matrix(c(9,0,
+#'                     0,9),nrow=2, byrow=TRUE)
+#' snr = 0.25
+#' sigma_sq = sum(diag(lambda_mat))/(snr*p)
+#' V = V_mat_calc(A, lambda_mat)
+#' sim_data = data_gen_1d_2(s_old_mat,s_new_mat,k,n,
+#'                          lambda_mat, sigma_sq, A, C)
+#' }
 data_gen_1d_2 <- function(s_old_mat, s_new_mat, k, n,
                           lambda_mat, sigma_sq, A, V, 
                           normalize=FALSE){ 
@@ -169,6 +187,12 @@ data_gen_1d_2 <- function(s_old_mat, s_new_mat, k, n,
 #'
 #' @return a list of estimated parameters
 #' @export
+#' 
+#' @examples
+#' s = sim_data$location
+#' y_mat = sim_data$y_mat[1:100,]
+#' y_mat_new = sim_data$y_mat[1:100,]
+#' EM_result <- EM_func3(s=s, y_mat=y_mat, y_mat_new=y_mat_new, tau=8, k=2)
 EM_func3 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30, 
                     tol = 0.001, tau, k){
         
@@ -228,6 +252,21 @@ EM_func3 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30,
 #'
 #' @return a list of tuning process
 #' @export
+#' 
+#' @examples 
+#' \dontrun{
+#' s = sim_data$location
+#' y_mat = sim_data$y_mat[1:100,]
+#' tau = 2^seq(-10,10,by=1)
+#' k= c(1,2,3,4)
+#' 
+#' library(foreach)
+#' library(doParallel)
+#' cl = makeCluster(6)
+#' registerDoParallel(cl)
+#' 
+#' cv_result_all = temp_spat_cv_final3(s=s, y_mat=y_mat, tau=tau, k=k)
+#' }
 temp_spat_cv_final3 <- function(s, y_mat, sigma2_eps=1, itermax = 30, 
                                 tol = 0.001, tau, k){
         
@@ -349,6 +388,15 @@ temp_spat_cv_final3 <- function(s, y_mat, sigma2_eps=1, itermax = 30,
 #' spatial prediction & temporal forecast 
 #' (both point & interval prediction)
 #' @export
+#' 
+#' @examples 
+#' s = sim_data$location
+#' s_new = sim_data$location_new
+#' y_mat = sim_data$y_mat[1:100,]
+#' y_mat_new = sim_data$y_mat[1:100,]
+#' EM_result <- EM_func3(s=s, y_mat=y_mat, y_mat_new=y_mat_new, tau=8, k=2)
+#' new_phi <- new_loc_phi(s_new=s_new, s_old = s, B = B_gen(s, EM_result$Phi))
+#' pred_result = pred_func(new_phi=new_phi, y_mat_new=y_mat_new, EM_result=EM_result)
 pred_func = function(new_phi, y_mat_new, EM_result){
         
         n_train = ncol(EM_result$smooth_result$xi_smooth)
@@ -715,7 +763,7 @@ auto_gau_basis_1d = function(s_mat, num_center,scale=1.5){
         out = matrix(0,nrow=nrow(s_mat),ncol=num_center)
         for(i in 1:nrow(s_center)){
                 s_center_mat = matrix(rep(s_center[i,],nrow(s_mat)),
-                                      nrow=nrow(s_mat),byrow = T)
+                                      nrow=nrow(s_mat),byrow = TRUE)
                 out[,i]=exp(-rowSums((s_mat-s_center_mat)^2)/(2*sigma2))
         }
         #print(sigma2)

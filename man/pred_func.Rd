@@ -21,3 +21,12 @@ spatial prediction & temporal forecast
 \description{
 Prediction function of Temporal Spatial PCA
 }
+\examples{
+s = sim_data$location
+s_new = sim_data$location_new
+y_mat = sim_data$y_mat[1:100,]
+y_mat_new = sim_data$y_mat[1:100,]
+EM_result <- EM_func3(s=s, y_mat=y_mat, y_mat_new=y_mat_new, tau=8, k=2)
+new_phi <- new_loc_phi(s_new=s_new, s_old = s, B = B_gen(s, EM_result$Phi))
+pred_result = pred_func(new_phi=new_phi, y_mat_new=y_mat_new, EM_result=EM_result)
+}
