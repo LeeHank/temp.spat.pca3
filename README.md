@@ -1,7 +1,6 @@
 
-[![Travis build status](https://travis-ci.com/LeeHank/temp.spat.pca3.svg?branch=master)](https://travis-ci.com/LeeHank/temp.spat.pca3)
+[![Travis build status](https://travis-ci.com/LeeHank/temp.spat.pca3.svg?branch=master)](https://travis-ci.com/LeeHank/temp.spat.pca3) [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/LeeHank/temp.spat.pca3?branch=master&svg=true)](https://ci.appveyor.com/project/LeeHank/temp.spat.pca3) <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
 temp.spat.pca3
 ==============
 
