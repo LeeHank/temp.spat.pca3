@@ -157,7 +157,7 @@ data_gen_1d_2 <- function(s_old_mat, s_new_mat, k, n,
         #Step 4: generate Y matrix
         #--------------------------
         
-        epsilon <- matrix(rnorm(sd=sqrt(sigma_sq),n*p), nrow=n, ncol=p)
+        epsilon <- matrix(stats::rnorm(sd=sqrt(sigma_sq),n*p), nrow=n, ncol=p)
         y_mat <- xsi %*% t(phi_mat) + epsilon
         
         
@@ -253,6 +253,8 @@ EM_func3 = function(s, y_mat, y_mat_new, sigma2_eps=1, itermax = 30,
 #' @return a list of tuning process
 #' @export
 #' 
+#' @import foreach
+#' @import doParallel
 #' @examples 
 #' \dontrun{
 #' s = sim_data$location
@@ -502,7 +504,7 @@ temp_spat_sim_em3 = function(s, y_mat, y_mat_new,
         lag0_cov_true = phi_mat_new %*% lambda_mat %*% t(phi_mat_new)
         lag1_cov_true = phi_mat_new %*% A %*% lambda_mat %*% t(phi_mat_new)
         
-        performance = performance_func(y_new_true = signal_mat_new,
+        performance = performance_func(y_new_true = y_new_true,
                                        y_spat = pred_result$y_spat,
                                        y_temp = pred_result$y_temp,
                                        lag0_cov_true = lag0_cov_true,
@@ -588,7 +590,7 @@ model1_func = function(s, s_new, y_mat,y_mat_new,
                         as.numeric(t(matrix(w_vec)) %*% inv_data_cov_mat %*% matrix(w_vec))
                 neg_two_like
         }
-        trytry = optim(fn=cost_func, par=c(0.2,0.1,0.1,0.1),
+        trytry = stats::optim(fn=cost_func, par=c(0.2,0.1,0.1,0.1),
                        method="L-BFGS-B",
                        lower=c(-0.95,0.01,0.01,0.01),
                        upper=c(0.95,4,10,4))
@@ -662,11 +664,11 @@ model1_func = function(s, s_new, y_mat,y_mat_new,
         signal = xsi_mat %*% t(phi_mat)
         obtain_phi = function(vec){
                 tryCatch({
-                        arima(vec, c(1,0,0))$coef["ar1"]
+                        stats::arima(vec, c(1,0,0))$coef["ar1"]
                 },
                 
                 warning = function(msg) {
-                        arima(vec, c(1,0,0))$coef["ar1"]
+                        stats::arima(vec, c(1,0,0))$coef["ar1"]
                 },
                 
                 error = function(msg) {
@@ -676,11 +678,11 @@ model1_func = function(s, s_new, y_mat,y_mat_new,
         }
         obtain_arma_phi = function(vec){
                 tryCatch({
-                        arima(vec, c(1,0,1))$coef["ar1"]
+                        stats::arima(vec, c(1,0,1))$coef["ar1"]
                 },
                 
                 warning = function(msg) {
-                        arima(vec, c(1,0,1))$coef["ar1"]
+                        stats::arima(vec, c(1,0,1))$coef["ar1"]
                 },
                 
                 error = function(msg) {
@@ -691,11 +693,11 @@ model1_func = function(s, s_new, y_mat,y_mat_new,
         }
         obtain_arma_theta = function(vec){
                 tryCatch({
-                        arima(vec, c(1,0,1))$coef["ma1"]
+                        stats::arima(vec, c(1,0,1))$coef["ma1"]
                 },
                 
                 warning = function(msg) {
-                        arima(vec, c(1,0,1))$coef["ma1"]
+                        stats::arima(vec, c(1,0,1))$coef["ma1"]
                 },
                 
                 error = function(msg) {
