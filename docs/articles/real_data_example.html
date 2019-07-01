@@ -96,6 +96,16 @@
 <h1 class="hasAnchor">
 <a href="#load-data" class="anchor"></a>Load data</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(temp.spat.pca3)
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(dplyr)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'dplyr'</span>
+<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     filter, lag</span>
+<span class="co">#&gt; The following objects are masked from 'package:base':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(tidyr)
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/dim">dim</a></span>(NCEP_U)
 <span class="co">#&gt; [1] 480 289</span>
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/dim">dim</a></span>(NCEPlatlon)
@@ -149,6 +159,11 @@ test_idx =<span class="st"> </span><span class="kw"><a href="https://www.rdocume
 
 <span class="co">#long-format space-time table</span>
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(magrittr)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'magrittr'</span>
+<span class="co">#&gt; The following object is masked from 'package:tidyr':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     extract</span>
 space_wide =<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/data.frame">data.frame</a></span>(y_mat_all_c)
 space_wide<span class="op">$</span>time =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(space_wide)
 data_long =<span class="st"> </span>space_wide <span class="op">%&gt;%</span>
@@ -208,6 +223,11 @@ cv_data<span class="op">$</span>best_list<span class="op">$</span>stau <span cla
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(lattice)
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(gridExtra)
 <span class="co">#&gt; Warning: package 'gridExtra' was built under R version 3.5.3</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'gridExtra'</span>
+<span class="co">#&gt; The following object is masked from 'package:dplyr':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     combine</span>
 plist=<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>()
 <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>){
         t =<span class="st"> </span>t_set[i]
