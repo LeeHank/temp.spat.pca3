@@ -33,9 +33,7 @@ n=n_train+n_test
 p=50
 s <- matrix(seq(-5, 5, length = p),nrow=p,ncol=1)
 s_new <- matrix(seq(-5, 5, length=3*p), nrow=3*p, ncol=1)
-# s = matrix(seq(-5,5,by=0.2))
-# s_new = matrix(seq(-5,5,by=0.1))
-# p = nrow(s)
+
 
 
 # dim of eigen-space
